@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<UserIdentity.Models.InputModel>
+@{
     var grid = Html.DevExpress().GridView(settings =>
     {
         settings.Name = "GridView";
@@ -7,7 +8,7 @@
         settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialAddNew" };
         settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialUpdate" };
         settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialDelete" };
-        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+        settings.SettingsEditing.Mode = GridViewEditingMode.PopupEditForm;
         settings.SettingsBehavior.ConfirmDelete = true;
 
         settings.CommandColumn.Visible = true;
@@ -25,20 +26,99 @@
         settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.Off;
         settings.SettingsAdaptivity.AdaptiveColumnPosition = GridViewAdaptiveColumnPosition.Right;
         settings.SettingsAdaptivity.AdaptiveDetailColumnCount = 1;
-        settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = false;
+        settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
         settings.SettingsAdaptivity.HideDataCellsAtWindowInnerWidth = 0;
 
         settings.Columns.Add("Id");
-        settings.Columns.Add("ShapeType");
-        settings.Columns.Add("Yukseklik");
-        settings.Columns.Add("Yaricap");
-        settings.Columns.Add("Kenar");
-        settings.Columns.Add("KısaKenar");
-        settings.Columns.Add("UzunKenar");
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "ShapeType";
+            column.Caption = "Şekil";
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = new string[] { "Kare", "Dikdortgen", "Daire", "Silindir", "Kup" };
+                //p.ClientSideEvents.SelectedIndexChanged = "onShapeTypeChanged";
+            });
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Yukseklik";
+            c.Caption = "Yukseklik";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Yaricap";
+            c.Caption = "Yaricap";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Kenar";
+            c.Caption = "Kenar";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "KısaKenar";
+            c.Caption = "Kısa Kenar";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "UzunKenar";
+            c.Caption = "Uzun Kenar";
+        });
     });
+
     if (ViewData["EditError"] != null)
     {
         grid.SetEditErrorText((string)ViewData["EditError"]);
     }
 }
 @grid.Bind(Model).GetHtml()
+
+@*@section Scripts {
+    <script type="text/javascript">
+        function OnShapeTypeChanged(s, e) {
+            var gridView = s.grid;
+            var shapeType = s.GetValue();
+
+            var yukseklikColumn = gridView.GetColumnByField("Yukseklik");
+            var yaricapColumn = gridView.GetColumnByField("Yaricap");
+            var kenarColumn = gridView.GetColumnByField("Kenar");
+            var kisaKenarColumn = gridView.GetColumnByField("KısaKenar");
+            var uzunKenarColumn = gridView.GetColumnByField("UzunKenar");
+
+            gridView.SetColumnVisible(yukseklikColumn.index, false);
+            gridView.SetColumnVisible(yaricapColumn.index, false);
+            gridView.SetColumnVisible(kenarColumn.index, false);
+            gridView.SetColumnVisible(kisaKenarColumn.index, false);
+            gridView.SetColumnVisible(uzunKenarColumn.index, false);
+
+            switch (shapeType) {
+                case "Kare":
+                    gridView.SetColumnVisible(kenarColumn.index, true);
+                    break;
+                case "Dikdortgen":
+                    gridView.SetColumnVisible(kisaKenarColumn.index, true);
+                    gridView.SetColumnVisible(uzunKenarColumn.index, true);
+                    break;
+                case "Silindir":
+                    gridView.SetColumnVisible(yukseklikColumn.index, true);
+                    gridView.SetColumnVisible(yaricapColumn.index, true);
+                    break;
+                case "Kure":
+                    gridView.SetColumnVisible(yaricapColumn.index, true);
+                    break;
+            }
+        }
+
+        // Initialize visibility based on the initial value
+        function OnInit(s, e) {
+            OnShapeTypeChanged(s.GetEditor("ShapeType"), null);
+        }
+    </script>
+}*@

@@ -10,20 +10,27 @@ namespace UserIdentity.Controllers
 {
     public class ShapeController : Controller
     {
+        public ShapeController() { }
+        public ActionResult Index() {  return View(); }
+
+
+
+
+
 
         UserIdentity.Identity.IdentityDataContext db = new UserIdentity.Identity.IdentityDataContext();
 
         [ValidateInput(false)]
         public ActionResult GridViewPartial()
         {
-            var model = db.Inputs;
+            var model = db.InputModels;
             return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
         }
 
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialAddNew([ModelBinder(typeof(DevExpressEditorsBinder))] UserIdentity.Models.InputModel item)
         {
-            var model = db.Inputs;
+            var model = db.InputModels;
             if (ModelState.IsValid)
             {
                 try
@@ -43,7 +50,7 @@ namespace UserIdentity.Controllers
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialUpdate([ModelBinder(typeof(DevExpressEditorsBinder))] UserIdentity.Models.InputModel item)
         {
-            var model = db.Inputs;
+            var model = db.InputModels;
             if (ModelState.IsValid)
             {
                 try
@@ -67,7 +74,7 @@ namespace UserIdentity.Controllers
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialDelete(System.Int32 Id)
         {
-            var model = db.Inputs;
+            var model = db.InputModels;
             if (Id >= 0)
             {
                 try
