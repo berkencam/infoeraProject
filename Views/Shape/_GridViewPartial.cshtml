@@ -1,5 +1,4 @@
-﻿@model IEnumerable<UserIdentity.Models.InputModel>
-@{
+﻿@{
     var grid = Html.DevExpress().GridView(settings =>
     {
         settings.Name = "GridView";
@@ -29,7 +28,11 @@
         settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
         settings.SettingsAdaptivity.HideDataCellsAtWindowInnerWidth = 0;
 
-        settings.Columns.Add("Id");
+        settings.Columns.Add(column =>
+        {
+            column.Visible = false;
+        });
+
 
         settings.Columns.Add(column =>
         {
@@ -37,8 +40,8 @@
             column.Caption = "Şekil";
             column.EditorProperties().ComboBox(p =>
             {
-                p.DataSource = new string[] { "Kare", "Dikdortgen", "Daire", "Silindir", "Kup" };
-                //p.ClientSideEvents.SelectedIndexChanged = "onShapeTypeChanged";
+                p.DataSource = new string[] { "Kare", "Dikdortgen", "Daire", "Silindir", "Kup", "Kure" };
+                p.ClientSideEvents.SelectedIndexChanged = "onShapeTypeChanged";
             });
         });
 
@@ -46,31 +49,65 @@
         {
             c.FieldName = "Yukseklik";
             c.Caption = "Yukseklik";
+            c.EditorProperties().TextBox(p =>
+            {
+                p.ClientInstanceName = "Yukseklik";
+            });
         });
 
         settings.Columns.Add(c =>
         {
             c.FieldName = "Yaricap";
             c.Caption = "Yaricap";
+            c.EditorProperties().TextBox(p =>
+            {
+                p.ClientInstanceName = "Yaricap";
+            });
         });
 
         settings.Columns.Add(c =>
         {
             c.FieldName = "Kenar";
             c.Caption = "Kenar";
+            c.EditorProperties().TextBox(p =>
+            {
+                p.ClientInstanceName = "Kenar";
+            });
         });
 
         settings.Columns.Add(c =>
         {
             c.FieldName = "KısaKenar";
             c.Caption = "Kısa Kenar";
+            c.EditorProperties().TextBox(p =>
+            {
+                p.ClientInstanceName = "KısaKenar";
+            });
         });
 
         settings.Columns.Add(c =>
         {
             c.FieldName = "UzunKenar";
             c.Caption = "Uzun Kenar";
+            c.EditorProperties().TextBox(p =>
+            {
+                p.ClientInstanceName = "UzunKenar";
+            });
         });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "HesaplandiMi";
+            c.Caption = "Hesaplandı mı?";
+            c.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "CreatedDate";
+            c.Caption = "Hesaplanma Tarihi";
+            c.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+
     });
 
     if (ViewData["EditError"] != null)
@@ -80,45 +117,51 @@
 }
 @grid.Bind(Model).GetHtml()
 
-@*@section Scripts {
-    <script type="text/javascript">
-        function OnShapeTypeChanged(s, e) {
-            var gridView = s.grid;
-            var shapeType = s.GetValue();
+<script>
+    function onShapeTypeChanged(s, e) {
+        var shapeType = s.GetValue();
+        var kenar = ASPxClientTextBox.Cast("Kenar");
+        var kisaKenar = ASPxClientTextBox.Cast("KısaKenar");
+        var uzunKenar = ASPxClientTextBox.Cast("UzunKenar");
+        var yukseklik = ASPxClientTextBox.Cast("Yukseklik");
+        var yaricap = ASPxClientTextBox.Cast("Yaricap");
 
-            var yukseklikColumn = gridView.GetColumnByField("Yukseklik");
-            var yaricapColumn = gridView.GetColumnByField("Yaricap");
-            var kenarColumn = gridView.GetColumnByField("Kenar");
-            var kisaKenarColumn = gridView.GetColumnByField("KısaKenar");
-            var uzunKenarColumn = gridView.GetColumnByField("UzunKenar");
 
-            gridView.SetColumnVisible(yukseklikColumn.index, false);
-            gridView.SetColumnVisible(yaricapColumn.index, false);
-            gridView.SetColumnVisible(kenarColumn.index, false);
-            gridView.SetColumnVisible(kisaKenarColumn.index, false);
-            gridView.SetColumnVisible(uzunKenarColumn.index, false);
+        kenar.SetValue("");
+        kisaKenar.SetValue("");
+        uzunKenar.SetValue("");
+        yukseklik.SetValue("");
+        yaricap.SetValue("");
 
-            switch (shapeType) {
-                case "Kare":
-                    gridView.SetColumnVisible(kenarColumn.index, true);
-                    break;
-                case "Dikdortgen":
-                    gridView.SetColumnVisible(kisaKenarColumn.index, true);
-                    gridView.SetColumnVisible(uzunKenarColumn.index, true);
-                    break;
-                case "Silindir":
-                    gridView.SetColumnVisible(yukseklikColumn.index, true);
-                    gridView.SetColumnVisible(yaricapColumn.index, true);
-                    break;
-                case "Kure":
-                    gridView.SetColumnVisible(yaricapColumn.index, true);
-                    break;
-            }
+
+        kenar.SetVisible(false);
+        kisaKenar.SetVisible(false);
+        uzunKenar.SetVisible(false);
+        yukseklik.SetVisible(false);
+        yaricap.SetVisible(false);
+
+
+        switch (shapeType) {
+            case "Kare":
+                kenar.SetVisible(true);
+                break;
+            case "Dikdortgen":
+                kisaKenar.SetVisible(true);
+                uzunKenar.SetVisible(true);
+                break;
+            case "Daire":
+                yaricap.SetVisible(true);
+                break;
+            case "Silindir":
+                yaricap.SetVisible(true);
+                yukseklik.SetVisible(true);
+                break;
+            case "Kup":
+                kenar.SetVisible(true);
+                break;
+            case "Kure":
+                yaricap.SetVisible(true);
+                break;
         }
-
-        // Initialize visibility based on the initial value
-        function OnInit(s, e) {
-            OnShapeTypeChanged(s.GetEditor("ShapeType"), null);
-        }
-    </script>
-}*@
+    }
+</script>

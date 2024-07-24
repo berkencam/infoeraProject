@@ -3,8 +3,8 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
 using System.Web;
 using System.Web.Mvc;
-using UserIdentity.Identity;
-using UserIdentity.Models;
+using dal.Identity;
+using dal.Models;
 
 namespace UserIdentity.Controllers
 {

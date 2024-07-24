@@ -8,9 +8,9 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using UserIdentity.Identity;
+using dal.Identity;
 using System.Data.Entity;
-using UserIdentity.Models;
+using dal.Models;
 
 namespace UserIdentity.Controllers
 {
