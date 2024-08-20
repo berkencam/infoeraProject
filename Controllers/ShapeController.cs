@@ -8,11 +8,14 @@ using dal.Identity;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Configuration;
+using Microsoft.AspNet.Identity;
 
 namespace UserIdentity.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ShapeController : Controller
     {
+        
         public ActionResult Index() { return View(); }
         public ShapeController() { }
 
@@ -21,9 +24,10 @@ namespace UserIdentity.Controllers
         [ValidateInput(false)]
         public ActionResult GridViewPartial()
         {
+            var userId = new Guid(User.Identity.GetUserId());
+            var model = db.InputModels.Where(i=>i.UserId == userId);
 
-
-            var model = db.InputModels;
+            
             return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
         }
 
@@ -37,6 +41,7 @@ namespace UserIdentity.Controllers
                 {
                     item.HesaplandiMi = false;
                     item.CreatedDate = DateTime.Now;
+                    item.UserId = new Guid(User.Identity.GetUserId());
                     model.Add(item);
                     db.SaveChanges();
                 }
@@ -47,12 +52,15 @@ namespace UserIdentity.Controllers
             }
             else
                 ViewData["EditError"] = "Please, correct all errors.";
-            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
+            var userId = new Guid(User.Identity.GetUserId());
+            var model2 = db.InputModels.Where(i => i.UserId == userId);
+            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model2.ToList());
         }
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialUpdate([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.InputModel item)
         {
             var model = db.InputModels;
+            bool isSuccess = false;
             if (ModelState.IsValid)
             {
                 try
@@ -60,7 +68,6 @@ namespace UserIdentity.Controllers
                     var modelItem = model.FirstOrDefault(it => it.Id == item.Id);
                     if (modelItem != null)
                     {
-
                         modelItem.ShapeType = item.ShapeType;
                         modelItem.Yukseklik = item.Yukseklik;
                         modelItem.Yaricap = item.Yaricap;
@@ -71,6 +78,7 @@ namespace UserIdentity.Controllers
                         modelItem.CreatedDate = DateTime.Now;
 
                         db.SaveChanges();
+                        isSuccess = true;
                     }
                 }
                 catch (Exception e)
@@ -82,8 +90,9 @@ namespace UserIdentity.Controllers
             {
                 ViewData["EditError"] = "Please, correct all errors.";
             }
-            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
+            return Json(new { success = isSuccess });
         }
+
 
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialDelete([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.InputModel item)
@@ -103,83 +112,52 @@ namespace UserIdentity.Controllers
                     ViewData["EditError"] = e.Message;
                 }
             }
-            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
+            var userId = new Guid(User.Identity.GetUserId());
+            var model2 = db.InputModels.Where(i => i.UserId == userId);
+            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model2.ToList());
         }
+
 
         dal.Identity.IdentityDataContext db1 = new dal.Identity.IdentityDataContext();
 
         [ValidateInput(false)]
         public ActionResult GridViewPartialResults()
         {
-            var model = db1.ResultModels;
+            var userId = new Guid(User.Identity.GetUserId());
+            var model = db.ResultModels.Where(i => i.UserId == userId);
             return PartialView("~/Views/Shape/_GridViewPartialResults.cshtml", model.ToList());
         }
 
-        [HttpPost, ValidateInput(false)]
-        public ActionResult GridViewPartialResultsAddNew([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.ResultModel item)
+        private static readonly HttpClient httpClient = new HttpClient();
+#if DEBUG
+        string _targetApiUrl = ConfigurationManager.AppSettings["FirstApiUrlLocal"];
+#else
+  string _targetApiUrl = ConfigurationManager.AppSettings["FirstApiUrlLive"];
+#endif
+
+        
+
+        public async Task<ActionResult> CalculateAndFetchResults()
         {
-            var model = db1.ResultModels;
-            if (ModelState.IsValid)
+            try
             {
-                try
+                HttpResponseMessage response = await httpClient.PostAsync(_targetApiUrl, null);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    model.Add(item);
-                    db1.SaveChanges();
+                    
+                    return Json(new { success = true });
                 }
-                catch (Exception e)
+                else
                 {
-                    ViewData["EditError"] = e.Message;
+                    return Json(new { success = false, error = response.ReasonPhrase });
                 }
             }
-            else
-                ViewData["EditError"] = "Please, correct all errors.";
-            return PartialView("~/Views/Shape/_GridViewPartialResults.cshtml", model.ToList());
-        }
-        [HttpPost, ValidateInput(false)]
-        public ActionResult GridViewPartialResultsUpdate([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.ResultModel item)
-        {
-            var model = db1.ResultModels;
-            if (ModelState.IsValid)
+            catch (Exception ex)
             {
-                try
-                {
-                    var modelItem = model.FirstOrDefault(it => it.Id == item.Id);
-                    if (modelItem != null)
-                    {
-                        this.UpdateModel(modelItem);
-                        db1.SaveChanges();
-                    }
-                }
-                catch (Exception e)
-                {
-                    ViewData["EditError"] = e.Message;
-                }
+                return Json(new { success = false, error = ex.Message });
             }
-            else
-                ViewData["EditError"] = "Please, correct all errors.";
-            return PartialView("~/Views/Shape/_GridViewPartialResults.cshtml", model.ToList());
         }
-        [HttpPost, ValidateInput(false)]
-        public ActionResult GridViewPartialResultsDelete(System.Int32 Id)
-        {
-            var model = db1.ResultModels;
-            if (Id >= 0)
-            {
-                try
-                {
-                    var item = model.FirstOrDefault(it => it.Id == Id);
-                    if (item != null)
-                        model.Remove(item);
-                    db1.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    ViewData["EditError"] = e.Message;
-                }
-            }
-            return PartialView("~/Views/Shape/_GridViewPartialResults.cshtml", model.ToList());
-        }
-        private readonly string _firstApiUrl = ConfigurationManager.AppSettings["FirstApiUrl"];
 
 
     }

@@ -45,13 +45,18 @@ namespace UserIdentity.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser();
-                user.Email = model.Email;
-                user.UserName = model.UserName;
+                var user = new ApplicationUser
+                {
+                    Email = model.Email,
+                    UserName = model.UserName
+                };
+
                 var result = userManager.Create(user, model.Password);
                 if (result.Succeeded)
                 {
-                    //userManager.AddToRole(user.Id, "User");
+                    
+                    userManager.AddToRole(user.Id, "Member");
+
                     return RedirectToAction("Login");
                 }
                 else
@@ -60,14 +65,11 @@ namespace UserIdentity.Controllers
                     {
                         ModelState.AddModelError("", error);
                     }
-
                 }
-
-
-
             }
             return View(model);
         }
+
         [HttpGet]
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)

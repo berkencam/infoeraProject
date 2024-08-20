@@ -20,19 +20,19 @@
 
                         <div class="form-group">
                             <label for="UserName">Username</label>
-                            @Html.TextBoxFor(i => i.UserName, new { @class = "form-control", @placeholder = "Enter your username" })
+                            @Html.TextBoxFor(i => i.UserName, new { @class = "form-control", @placeholder = "Enter your username", required = "required" })
                             @Html.ValidationMessageFor(i => i.UserName, "", new { @class = "text-danger" })
                         </div>
 
                         <div class="form-group">
                             <label for="Email">Email</label>
-                            @Html.TextBoxFor(i => i.Email, new { @class = "form-control", @placeholder = "Enter your email" })
+                            @Html.TextBoxFor(i => i.Email, new { @class = "form-control", @placeholder = "Enter your email", required = "required", type = "email" })
                             @Html.ValidationMessageFor(i => i.Email, "", new { @class = "text-danger" })
                         </div>
 
                         <div class="form-group">
                             <label for="Password">Password</label>
-                            @Html.PasswordFor(i => i.Password, new { @class = "form-control", @placeholder = "Enter your password" })
+                            @Html.PasswordFor(i => i.Password, new { @class = "form-control", @placeholder = "Enter your password", required = "required" })
                             @Html.ValidationMessageFor(i => i.Password, "", new { @class = "text-danger" })
                         </div>
 
@@ -42,7 +42,7 @@
                     }
                 </div>
                 <div class="card-footer text-center">
-                    <small class="text-muted">Already have an account? <a href="/Account/Login">Login here</a></small>
+                    <small class="text-muted">Already have an account? <a href="@Url.Action("Login", "Account")">Login here</a></small>
                 </div>
             </div>
         </div>

@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = "Create Role";
+}
+
+<h2>Create Role</h2>
+
+@using (Html.BeginForm("Create", "RoleAdmin", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.Label("Role Name", new { @class = "control-label" })
+        @Html.TextBox("roleName", null, new { @class = "form-control" })
+        @Html.ValidationMessage("roleName", "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default" })
+}

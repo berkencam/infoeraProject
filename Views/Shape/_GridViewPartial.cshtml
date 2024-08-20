@@ -30,9 +30,11 @@
 
         settings.Columns.Add(column =>
         {
-            column.Visible = false;
+            column.FieldName = "Id";
+            column.Caption = "ID";
+            column.EditFormSettings.Visible = DevExpress.Utils.DefaultBoolean.False;
         });
-
+        
 
         settings.Columns.Add(column =>
         {

@@ -14,6 +14,7 @@ namespace UserIdentity
     {
         protected void Application_Start()
         {
+            RoleManagerHelper.InitializeRoles();
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             WebApiConfig.Register(GlobalConfiguration.Configuration);

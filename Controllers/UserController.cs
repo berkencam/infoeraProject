@@ -14,6 +14,7 @@ using dal.Models;
 
 namespace UserIdentity.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -24,11 +25,12 @@ namespace UserIdentity.Controllers
             var context = new IdentityDataContext();
             userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
             roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+            
         }
 
-        // GET: User
         public async Task<ActionResult> Index()
         {
+            
             var users = await userManager.Users.ToListAsync();
             var model = users.Select(user => new UserViewModel
             {
@@ -42,7 +44,6 @@ namespace UserIdentity.Controllers
             return View(model);
         }
 
-        // GET: User/Edit/{id}
         public async Task<ActionResult> Edit(string id)
         {
             if (id == null)
@@ -55,18 +56,29 @@ namespace UserIdentity.Controllers
             {
                 return HttpNotFound();
             }
+
+            
+            var userRoles = userManager.GetRoles(user.Id);
+
             var model = new EditUserViewModel
             {
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Roles = roleManager.Roles.ToList().Select(r => new SelectListItem
+                {
+                    Value = r.Name,
+                    Text = r.Name,
+                    Selected = userRoles.Contains(r.Name)
+                }).ToList()
             };
+
+
             return View(model);
         }
 
-        // POST: User/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(EditUserViewModel model)
@@ -84,9 +96,31 @@ namespace UserIdentity.Controllers
                 user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
 
+                var userRoles = await userManager.GetRolesAsync(user.Id);
+                var selectedRoles = model.Roles?.Where(r => r.Selected).Select(r => r.Value).ToList();
+
+
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)
                 {
+                    
+                    foreach (var role in userRoles)
+                    {
+                        if (!selectedRoles.Contains(role))
+                        {
+                            await userManager.RemoveFromRoleAsync(user.Id, role);
+                        }
+                    }
+
+                    
+                    foreach (var role in selectedRoles)
+                    {
+                        if (!userRoles.Contains(role))
+                        {
+                            await userManager.AddToRoleAsync(user.Id, role);
+                        }
+                    }
+
                     return RedirectToAction("Index");
                 }
                 AddErrors(result);
@@ -94,7 +128,6 @@ namespace UserIdentity.Controllers
             return View(model);
         }
 
-        // GET: User/Delete/{id}
         public async Task<ActionResult> Delete(string id)
         {
             if (id == null)
@@ -118,7 +151,7 @@ namespace UserIdentity.Controllers
             return View(model);
         }
 
-        // POST: User/Delete/{id}
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(string id)
@@ -139,8 +172,5 @@ namespace UserIdentity.Controllers
                 ModelState.AddModelError("", error);
             }
         }
-
-        
     }
-
 }

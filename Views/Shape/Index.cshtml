@@ -1,2 +1,52 @@
-﻿
-@Html.Action("GridViewPartial", "Shape")
+﻿<div id="gridViewPartial">
+    @Html.Action("GridViewPartial", "Shape")
+</div>
+
+<div>
+    @Html.DevExpress().Button(settings =>
+        {
+            settings.Name = "Button";
+            settings.Text = "Hesapla";
+            settings.UseSubmitBehavior = false;
+            settings.Style["background-color"] = "#4CAF50";
+            settings.Style["color"] = "white";
+            settings.Style["padding"] = "10px 20px";
+            settings.Style["border"] = "none";
+            settings.Style["cursor"] = "pointer";
+            settings.Style["border-radius"] = "4px";
+            settings.Style["font-size"] = "16px";
+            settings.ClientSideEvents.Click = "function(s, e) { onButtonClick(); }";
+        }).GetHtml()
+
+    @* Back Button *@
+    <button type="button" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; margin-left: 10px;" onclick="history.back()">Geri</button>
+</div>
+
+<div id="gridContainer" style="margin-top: 20px;">
+    @Html.Action("GridViewPartialResults", "Shape")
+</div>
+
+<script type="text/javascript">
+    function onButtonClick() {
+        $.ajax({
+            url: '@Url.Action("CalculateAndFetchResults", "Shape")',
+            type: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    refreshGrids();
+                } else {
+                    alert("An error occurred: " + response.error);
+                }
+            },
+            error: function() {
+                alert("An error occurred while calling the calculation.");
+            }
+        });
+    }
+
+    function refreshGrids() {
+        GridViewResults.PerformCallback();
+        GridView.PerformCallback();
+    }
+</script>
+

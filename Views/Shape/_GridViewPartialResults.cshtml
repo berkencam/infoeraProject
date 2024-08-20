@@ -1,0 +1,53 @@
+﻿@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "GridViewResults";
+        settings.CallbackRouteValues = new { Controller = "Shape", Action = "GridViewPartialResults" };
+
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialResultsAddNew" };
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialResultsUpdate" };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Shape", Action = "GridViewPartialResultsDelete" };
+        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+        settings.SettingsBehavior.ConfirmDelete = true;
+
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.ShowNewButton = false;
+        settings.CommandColumn.ShowDeleteButton = false;
+        settings.CommandColumn.ShowEditButton = false;
+
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsPager.Visible = true;
+        settings.Settings.ShowGroupPanel = true;
+        settings.Settings.ShowFilterRow = true;
+        settings.SettingsBehavior.AllowSelectByRowClick = true;
+
+        settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.Off;
+        settings.SettingsAdaptivity.AdaptiveColumnPosition = GridViewAdaptiveColumnPosition.Right;
+        settings.SettingsAdaptivity.AdaptiveDetailColumnCount = 1;
+        settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
+        settings.SettingsAdaptivity.HideDataCellsAtWindowInnerWidth = 0;
+
+        settings.Columns.Add("InputModelId");
+        settings.Columns.Add("ShapeType");
+        settings.Columns.Add("CreatedDate");
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "AlanSonuc";
+            column.Caption = "Alan Sonuç";
+            column.PropertiesEdit.DisplayFormatString = "F2";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "HacimSonuc";
+            column.Caption = "Hacim Sonuç";
+            column.PropertiesEdit.DisplayFormatString = "F2";
+        });
+    });
+    if (ViewData["EditError"] != null)
+    {
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+}
+@grid.Bind(Model).GetHtml()
