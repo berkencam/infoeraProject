@@ -9,27 +9,51 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Configuration;
 using Microsoft.AspNet.Identity;
+using dal.Models;
+using Microsoft.AspNet.Identity.EntityFramework;
+using UserIdentity.Attributes;
 
 namespace UserIdentity.Controllers
 {
-    [Authorize(Roles = "Admin")]
-    public class ShapeController : Controller
+    
+    public class ShapeController : MyController
     {
         
         public ActionResult Index() { return View(); }
         public ShapeController() { }
 
         IdentityDataContext db = new IdentityDataContext();
+        private readonly UserManager<ApplicationUser> UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new IdentityDataContext()));
 
         [ValidateInput(false)]
         public ActionResult GridViewPartial()
         {
             var userId = new Guid(User.Identity.GetUserId());
-            var model = db.InputModels.Where(i=>i.UserId == userId);
+            var roles = UserManager.GetRoles(User.Identity.GetUserId());
 
-            
+            IQueryable<InputModel> model;
+
+            if (roles.Contains("Hesaplayici") || roles.Contains("Girdici"))
+            {
+                // Hesaplayici veya Girdici rolünde olan kullanıcılar için filtreleme
+                var hesaplayiciGirdiciUsers = db.Users.ToList()
+                    .Where(u => UserManager.IsInRole(u.Id, "Hesaplayici") || UserManager.IsInRole(u.Id, "Girdici"))
+                    .Select(u => u.Id)
+                    .ToList();
+
+                model = db.InputModels
+                    .Where(i => hesaplayiciGirdiciUsers.Contains(i.UserId.ToString()));
+            }
+            else
+            {
+                // Diğer kullanıcılar sadece kendi kayıtlarını görsün
+                model = db.InputModels.Where(i => i.UserId == userId);
+            }
+
             return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model.ToList());
         }
+
+
 
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialAddNew([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.InputModel item)
@@ -54,7 +78,7 @@ namespace UserIdentity.Controllers
                 ViewData["EditError"] = "Please, correct all errors.";
             var userId = new Guid(User.Identity.GetUserId());
             var model2 = db.InputModels.Where(i => i.UserId == userId);
-            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model2.ToList());
+            return GridViewPartial();
         }
         [HttpPost, ValidateInput(false)]
         public ActionResult GridViewPartialUpdate([ModelBinder(typeof(DevExpressEditorsBinder))] dal.Models.InputModel item)
@@ -114,17 +138,38 @@ namespace UserIdentity.Controllers
             }
             var userId = new Guid(User.Identity.GetUserId());
             var model2 = db.InputModels.Where(i => i.UserId == userId);
-            return PartialView("~/Views/Shape/_GridViewPartial.cshtml", model2.ToList());
+            return GridViewPartial();
         }
 
 
         dal.Identity.IdentityDataContext db1 = new dal.Identity.IdentityDataContext();
 
+       
         [ValidateInput(false)]
         public ActionResult GridViewPartialResults()
         {
             var userId = new Guid(User.Identity.GetUserId());
-            var model = db.ResultModels.Where(i => i.UserId == userId);
+            var roles = UserManager.GetRoles(User.Identity.GetUserId());
+
+            IQueryable<ResultModel> model;
+
+            if (roles.Contains("Hesaplayici") || roles.Contains("Girdici"))
+            {
+                // Hesaplayici veya Girdici rolünde olan kullanıcılar için filtreleme
+                var hesaplayiciGirdiciUsers = db.Users.ToList()
+                    .Where(u => UserManager.IsInRole(u.Id, "Hesaplayici") || UserManager.IsInRole(u.Id, "Girdici"))
+                    .Select(u => u.Id)
+                    .ToList();
+
+                model = db.ResultModels
+                    .Where(i => hesaplayiciGirdiciUsers.Contains(i.UserId.ToString()));
+            }
+            else
+            {
+                // Diğer kullanıcılar sadece kendi kayıtlarını görsün
+                model = db.ResultModels.Where(i => i.UserId == userId);
+            }
+
             return PartialView("~/Views/Shape/_GridViewPartialResults.cshtml", model.ToList());
         }
 
@@ -135,8 +180,7 @@ namespace UserIdentity.Controllers
   string _targetApiUrl = ConfigurationManager.AppSettings["FirstApiUrlLive"];
 #endif
 
-        
-
+        [Unauthorize("Girdici,Member")]
         public async Task<ActionResult> CalculateAndFetchResults()
         {
             try

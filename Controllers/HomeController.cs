@@ -6,12 +6,13 @@ using System.Web.Mvc;
 
 namespace UserIdentity.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : MyController
     {
         // GET: Home
         public ActionResult Index()
         {
             return View();
         }
+        public ActionResult About() { return View(); }
     }
 }

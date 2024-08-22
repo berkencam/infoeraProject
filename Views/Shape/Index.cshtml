@@ -1,26 +1,37 @@
-﻿<div id="gridViewPartial">
-    @Html.Action("GridViewPartial", "Shape")
-</div>
+﻿@if (User.IsInRole("Admin") || User.IsInRole("Hesaplayici") || User.IsInRole("Girdici") || User.IsInRole("User"))
+{
+    <div id="gridViewPartial">
+        @Html.Action("GridViewPartial", "Shape")
+    </div>
+}
 
+@if (User.IsInRole("Admin") || User.IsInRole("Hesaplayici") || User.IsInRole("User"))
+{
+    <div>
+        @Html.DevExpress().Button(settings =>
+                              {
+                                  settings.Name = "Button";
+                                  settings.Text = "Hesapla";
+                                  settings.UseSubmitBehavior = false;
+                                  settings.Style["background-color"] = "#4CAF50";
+                                  settings.Style["color"] = "white";
+                                  settings.Style["padding"] = "10px 20px";
+                                  settings.Style["border"] = "none";
+                                  settings.Style["cursor"] = "pointer";
+                                  settings.Style["border-radius"] = "4px";
+                                  settings.Style["font-size"] = "16px";
+                                  settings.ClientSideEvents.Click = "function(s, e) { onButtonClick(); }";
+                              }).GetHtml()
+
+
+    </div>
+}
 <div>
-    @Html.DevExpress().Button(settings =>
-        {
-            settings.Name = "Button";
-            settings.Text = "Hesapla";
-            settings.UseSubmitBehavior = false;
-            settings.Style["background-color"] = "#4CAF50";
-            settings.Style["color"] = "white";
-            settings.Style["padding"] = "10px 20px";
-            settings.Style["border"] = "none";
-            settings.Style["cursor"] = "pointer";
-            settings.Style["border-radius"] = "4px";
-            settings.Style["font-size"] = "16px";
-            settings.ClientSideEvents.Click = "function(s, e) { onButtonClick(); }";
-        }).GetHtml()
-
-    @* Back Button *@
     <button type="button" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; margin-left: 10px;" onclick="history.back()">Geri</button>
+
 </div>
+
+
 
 <div id="gridContainer" style="margin-top: 20px;">
     @Html.Action("GridViewPartialResults", "Shape")
